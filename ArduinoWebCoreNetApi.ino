@@ -13,7 +13,7 @@
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 #include <dht.h>
-#define dht_dpin A0 //no ; here. Set equal to channel sensor is on
+#define dht_dpin 2 //no ; here. Set equal to channel sensor is on
 
 #include "WiFiEsp.h"
 // Emulate Serial1 on pins 6/7 if not present
@@ -22,8 +22,10 @@
 SoftwareSerial Serial1(19, 18); // RX, TX
 #endif
 
-char ssid[] = "ssid";            // your network SSID (name)
-char pass[] = "password";        // your network password
+#include <ArduinoJson.h>
+
+char ssid[] = "House Lannister";            // your network SSID (name)
+char pass[] = "HearOurRoar";        // your network password
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 char server[] = "192.168.1.111";
 unsigned long lastConnectionTime = 0;         // last time you connected to the server, in milliseconds
@@ -37,7 +39,7 @@ String message = "Welcome";
 String dhts = "";
 float temper = 0;
 float humid = 0;
-
+String contentlength = "";
 
 // Initialize the Ethernet client object
 WiFiEspClient client;
@@ -69,28 +71,56 @@ void setup()
   Serial.println("You're connected to the network");
   
   printWifiStatus();
+
+  lcd.init();  
+  lcd.backlight();
+  lcd.setCursor(0,0);
+  lcd.print(message);
 }
 
 void loop()
 {
   // if there's incoming data from the net connection send it out the serial port
   // this is for debugging purposes only
-  lcd.print(message);
-  message = "";
-  while (client.available()) {
-    //char c = client.read();
-    //Serial.write(c);
-    message += (char)client.read();
-  }
 
-  lcd.backlight();
-  lcd.setCursor(0,0);
-  lcd.print(message);
+//  message = "";
+//  while (client.available()) {
+//    char c = client.read();
+//    Serial.write(c);
+//    message += (char)c;
+//  }
+
+String json;
+
+  int lines_received = 0;
+  
+  while(client.available()) {
+    String line = client.readStringUntil('\r\n');
+    if (lines_received == 9) { 
+      json=line;  
+    }
+    lines_received++;
+  }
+  
+
+
+StaticJsonDocument<200> doc;
+  DeserializationError error = deserializeJson(doc, json);
+const char* desc = doc["description"];
+//lcd.clear();
+  if(json.length()>0){
+    Serial.println("from server: "+json);
+    lcd.clear();
+      lcd.backlight();
+    lcd.setCursor(0,0);
+  lcd.print(desc);
+  }
   
   DHT.read11(dht_dpin);
   temper = DHT.temperature;
   humid = DHT.humidity;
 
+  
   // if 10 seconds have passed since your last connection,
   // then connect again and send data
   if (millis() - lastConnectionTime > postingInterval) {
@@ -118,14 +148,15 @@ void httpRequest()
     client.println("POST /api/dhts HTTP/1.1");
     client.println("Host: 192.168.1.111");
     client.println("Content-Type: application/json");
-    client.println("Content-Length: " + String(dhts.length);
+    contentlength="Content-Length: " + String(dhts.length());
+    client.println(contentlength);
     client.println();
     client.println(dhts);
     client.println();
 
 
     //GET Message
-    client.println("GET api/messages/0 HTTP/1.1");
+    client.println("GET /api/messages/0 HTTP/1.1");
     client.println("Host: 192.168.1.111");
     client.println("Connection: close");
     client.println();
