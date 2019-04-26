@@ -18,3 +18,5 @@ ESP8266 to Arduino MEGA 2560
 3. Arduino 3.3v to ESP VCC, RESET, CH_EN
 4. GND to GND
 
+The Web API code
+https://github.com/romeltined/WebCoreNetApi
