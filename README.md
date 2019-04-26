@@ -1,11 +1,14 @@
 # ArduinoWebCoreNetApi
 
+This project sends temperature and humidity data to a Web Api .NET core.
+It also displays a message from Web Api to the LCD attached to Arduino.
+The connection is through ESP8266.
+
 LCD I2C
 1. Connect the Black jumper cable from the GND pin on the LCD to the GND pin on the MEGA
 2.  Connect the Red jumper cable from then VCC pin on the LCD to the 5V pin on the MEGA
 3. Connect the Green jumper cable from the SDA pin on the LCD to the SDA pin on the MEGA
 4. Connect the Yellow jumper cable from the SCL pin on the LCD to the SCL pin on the MEGA
-
 
 DHT11 Temperature and Humidity sensor
 1. DHT11 Data PIN  to PIN 2 of Mega 2560
