@@ -25,8 +25,8 @@ SoftwareSerial Serial1(19, 18); // RX, TX
 
 #include <ArduinoJson.h>
 
-char ssid[] = "House Lannister";            // your network SSID (name)
-char pass[] = "HearOurRoar";        // your network password
+char ssid[] = "ssid";            // your network SSID (name)
+char pass[] = "pwd";        // your network password
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 char server[] = "192.168.1.111";
 unsigned long lastConnectionTime = 0;         // last time you connected to the server, in milliseconds
