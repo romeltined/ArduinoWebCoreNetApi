@@ -12,8 +12,9 @@
 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-#include <dht.h>
-#define dht_dpin 2 //no ; here. Set equal to channel sensor is on
+#include "DHT.h"
+#define DHTPIN 2 //no ; here. Set equal to channel sensor is on
+#define DHTTYPE DHT11
 
 #include "WiFiEsp.h"
 // Emulate Serial1 on pins 6/7 if not present
@@ -24,18 +25,18 @@ SoftwareSerial Serial1(19, 18); // RX, TX
 
 #include <ArduinoJson.h>
 
-char ssid[] = "ssid";            // your network SSID (name)
-char pass[] = "password";        // your network password
+char ssid[] = "House Lannister";            // your network SSID (name)
+char pass[] = "HearOurRoar";        // your network password
 int status = WL_IDLE_STATUS;     // the Wifi radio's status
 char server[] = "192.168.1.111";
 unsigned long lastConnectionTime = 0;         // last time you connected to the server, in milliseconds
 const unsigned long postingInterval = 10000L; // delay between updates, in milliseconds
 
-dht DHT;
+DHT dht(DHTPIN, DHTTYPE);
 
 LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
 
-String message = "Welcome";
+String message = "Arduino";
 String dhts = "";
 float temper = 0;
 float humid = 0;
@@ -50,6 +51,10 @@ void setup()
   Serial.begin(115200);
   // initialize serial for ESP module
   Serial1.begin(115200);
+
+  dht.begin();
+
+  
   // initialize ESP module
   WiFi.init(&Serial1);
 
@@ -80,20 +85,18 @@ void setup()
 
 void loop()
 {
+
+  
   // if there's incoming data from the net connection send it out the serial port
   // this is for debugging purposes only
-
-//  message = "";
 //  while (client.available()) {
 //    char c = client.read();
 //    Serial.write(c);
-//    message += (char)c;
 //  }
 
-String json;
 
+  String json;  
   int lines_received = 0;
-  
   while(client.available()) {
     String line = client.readStringUntil('\r\n');
     if (lines_received == 9) { 
@@ -101,26 +104,24 @@ String json;
     }
     lines_received++;
   }
+
+  //Serial.println(json);
   
-
-
-StaticJsonDocument<200> doc;
+  StaticJsonDocument<200> doc;
   DeserializationError error = deserializeJson(doc, json);
-const char* desc = doc["description"];
-//lcd.clear();
+  const char* desc = doc["description"];
+ 
   if(json.length()>0){
     Serial.println("from server: "+json);
     lcd.clear();
-      lcd.backlight();
+    lcd.backlight();
     lcd.setCursor(0,0);
   lcd.print(desc);
   }
-  
-  DHT.read11(dht_dpin);
-  temper = DHT.temperature;
-  humid = DHT.humidity;
+ 
+  temper = dht.readTemperature(); 
+  humid = dht.readHumidity();
 
-  
   // if 10 seconds have passed since your last connection,
   // then connect again and send data
   if (millis() - lastConnectionTime > postingInterval) {
