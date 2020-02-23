@@ -99,6 +99,7 @@ void loop()
   int lines_received = 0;
   while(client.available()) {
     String line = client.readStringUntil('\r\n');
+   //sometimes use 8th line
     if (lines_received == 9) { 
       json=line;  
     }
